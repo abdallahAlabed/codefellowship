@@ -1,40 +1,57 @@
 package com.example.codefellowship.model;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Collection;
 import java.util.Date;
-
+import java.util.List;
 
 @Entity
-@Table(name = "users")
-public class User extends EntityModel implements UserDetails {
+public class Users implements UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Integer id;
     @Column(name = "username", length = 3000, nullable = false, unique = true)
     private String username;
+
+
+    private boolean disabled;
+    protected Date createTime;
+    protected Date lastModifiedTime;
     @Column(name = "password", length = 3000, nullable = false)
     private String password;
-    @Column(name = "firstName", length = 3000, nullable = false)
     private String firstName;
-    @Column(name = "lastName", length = 3000, nullable = false)
     private String lastName;
-    @Column(name = "dateOfBirth", length = 3000, nullable = false)
     private Date dateOfBirth;
-    @Column(name = "bio", length = 3000, nullable = true)
     private String bio;
-    @Column(name = "userRole", length = 3000, nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "userRole", length = 3000, nullable = true)
     private UserRole userRole;
 
-    public User() {
+    @OneToMany(mappedBy="users", cascade = CascadeType.ALL)
+    private List <Post> post;
+
+    public List<Post> getPost() {
+        return post;
+    }
+
+    public void setPost(List<Post> post) {
+        this.post = post;
+    }
+
+    public Users() {
 
     }
 
-    public User(String username, String password) {
+    public Users(String username, String password) {
         this.username = username;
         this.password = password;
+        this.createTime = new Date();
+        this.lastModifiedTime = new Date();
     }
 
     public UserRole getUserRole() {
@@ -45,16 +62,13 @@ public class User extends EntityModel implements UserDetails {
         this.userRole = userRole;
     }
 
-    public User(String username, String password, String firstName, String lastName, Date dateOfBirth, String bio, UserRole userRole) {
-        this.username = username;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.dateOfBirth = dateOfBirth;
-        this.bio = bio;
-        this.userRole=userRole;
+    public Integer getId() {
+        return id;
     }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
     public String getFirstName() {
         return firstName;
     }
@@ -89,6 +103,46 @@ public class User extends EntityModel implements UserDetails {
     }
     ///////////////////////////////////////////////////////////////////
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "create_time", nullable = false)
+    @CreatedDate
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_modified_time", nullable = false)
+    @LastModifiedDate
+    public Date getLastModifiedTime() {
+        return lastModifiedTime;
+    }
+
+    public void setLastModifiedTime(Date lastModifiedTime) {
+        this.lastModifiedTime = lastModifiedTime;
+    }
+
+    @PrePersist
+    protected void prePersist() {
+        if (this.createTime == null) createTime = new Date();
+        if (this.lastModifiedTime == null) lastModifiedTime = new Date();
+    }
+
+    @PreUpdate
+    protected void preUpdate() {
+        this.lastModifiedTime = new Date();
+    }
+
+    @PreRemove
+    protected void preRemove() {
+        this.lastModifiedTime = new Date();
+    }
+
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
@@ -104,9 +158,6 @@ public class User extends EntityModel implements UserDetails {
         return username;
     }
 
-    public Integer getId() {
-        return id;
-    }
 
     @Override
     public boolean isAccountNonExpired() {
