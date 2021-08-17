@@ -1,57 +1,67 @@
 package com.example.codefellowship.model;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
+import java.util.List;
+import java.util.Set;
 @Entity
-public class Users implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Integer id;
+public class Users extends EntityModel {
+
     @Column(name = "username", length = 3000, nullable = false, unique = true)
     private String username;
-
-
-    private boolean disabled;
-    protected Date createTime;
-    protected Date lastModifiedTime;
     @Column(name = "password", length = 3000, nullable = false)
     private String password;
     private String firstName;
     private String lastName;
-    private Date dateOfBirth;
+    private String dateOfBirth;
     private String bio;
     @Enumerated(EnumType.STRING)
     @Column(name = "userRole", length = 3000, nullable = true)
     private UserRole userRole;
-
     @OneToMany(mappedBy="users", cascade = CascadeType.ALL)
-    private List <Post> post;
+    private List <Posts> post;
 
-    public List<Post> getPost() {
-        return post;
-    }
+    @ManyToMany
+    @JoinTable(
+            name="user_follow",
+            joinColumns={@JoinColumn(name="theUser")},
+            inverseJoinColumns = {@JoinColumn(name="followingUser")}
+    )
+    Set<Users> following;
 
-    public void setPost(List<Post> post) {
-        this.post = post;
-    }
+    @ManyToMany(mappedBy="following")
+    Set<Users> followers;
 
     public Users() {
 
     }
 
-    public Users(String username, String password) {
+
+    public Users(String username, String password,UserRole userRole  , String dateOfBirth, String bio, String firstName, String lastName) {
         this.username = username;
         this.password = password;
-        this.createTime = new Date();
-        this.lastModifiedTime = new Date();
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dateOfBirth = dateOfBirth;
+        this.bio = bio;
+        this.userRole = userRole;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public UserRole getUserRole() {
@@ -62,13 +72,7 @@ public class Users implements UserDetails {
         this.userRole = userRole;
     }
 
-    public Integer getId() {
-        return id;
-    }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
     public String getFirstName() {
         return firstName;
     }
@@ -86,11 +90,11 @@ public class Users implements UserDetails {
         this.lastName = lastName;
     }
 
-    public Date getDateOfBirth() {
+    public String getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
+    public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
@@ -101,84 +105,24 @@ public class Users implements UserDetails {
     public void setBio(String bio) {
         this.bio = bio;
     }
-    ///////////////////////////////////////////////////////////////////
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "create_time", nullable = false)
-    @CreatedDate
-    public Date getCreateTime() {
-        return createTime;
+    public Set<Users> getFollowing() {
+        return following;
     }
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
+    public void setFollowing(Set<Users> following) {
+        this.following = following;
     }
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "last_modified_time", nullable = false)
-    @LastModifiedDate
-    public Date getLastModifiedTime() {
-        return lastModifiedTime;
+    public Set<Users> getFollowers() {
+        return followers;
     }
 
-    public void setLastModifiedTime(Date lastModifiedTime) {
-        this.lastModifiedTime = lastModifiedTime;
+    public void setFollowers(Set<Users> followers) {
+        this.followers = followers;
     }
 
-    @PrePersist
-    protected void prePersist() {
-        if (this.createTime == null) createTime = new Date();
-        if (this.lastModifiedTime == null) lastModifiedTime = new Date();
+    public void addFollowing(Users followingUser) {
+        following.add(followingUser);
     }
-
-    @PreUpdate
-    protected void preUpdate() {
-        this.lastModifiedTime = new Date();
-    }
-
-    @PreRemove
-    protected void preRemove() {
-        this.lastModifiedTime = new Date();
-    }
-
-
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-
-
 }

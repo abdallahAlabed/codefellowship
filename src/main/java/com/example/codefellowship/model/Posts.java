@@ -4,21 +4,26 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class Post extends EntityModel{
+public class Posts extends EntityModel{
 
     @ManyToOne
-    Users users;
+    private Users users;
     private String imageFilePath;
-    String title ;
-    String content;
+    private String title ;
+    private String content;
     private Integer likes;
 
+    public Posts(String title, String content, String imageFilePath) {
+        this.imageFilePath = imageFilePath;
+        this.title = title;
+        this.content = content;
+    }
 
-    public Post() {
+    public Posts() {
     }
 
 
-    public Post(Users users, String imageFilePath, String title, String content, Integer likes) {
+    public Posts(Users users, String imageFilePath, String title, String content, Integer likes) {
         this.users = users;
         this.imageFilePath = imageFilePath;
         this.title = title;
@@ -26,12 +31,6 @@ public class Post extends EntityModel{
         this.likes = likes;
     }
 
-    public Users getUsers() {
-        return users;
-    }
-    public void setUsers(Users users) {
-        this.users = users;
-    }
 
     public String getImageFilePath() {
         return imageFilePath;

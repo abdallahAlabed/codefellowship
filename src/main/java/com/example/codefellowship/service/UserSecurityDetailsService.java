@@ -1,5 +1,6 @@
 package com.example.codefellowship.service;
 
+import com.example.codefellowship.model.UserRole;
 import com.example.codefellowship.repository.UserRepository;
 
 import com.example.codefellowship.model.Users;
@@ -10,6 +11,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.security.Principal;
+import java.util.Date;
+
 @Service
 public class UserSecurityDetailsService implements UserDetailsService {
 
@@ -19,10 +23,13 @@ public class UserSecurityDetailsService implements UserDetailsService {
 
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    public void addUser(String username, String password) {
-        Users newUser = new Users(username, bCryptPasswordEncoder.encode(password));
+    public void addUser(String username, String password, String userRole, String dateOfBirth,String bio,String firstName,String lastName) {
+        System.out.println("******************************************************");
+//        if (UserRole.valueOf("ROLE_USER").toString() ==userRole || UserRole.valueOf("ROLE_ADMIN").toString() ==userRole ){
+        Users newUser = new Users(username, bCryptPasswordEncoder.encode(password), UserRole.valueOf(userRole),dateOfBirth,bio,firstName,lastName);
+            System.out.println("--------------------------------------------------------------------");
         userRepository.save(newUser);
+//        }
     }
 
 
@@ -32,9 +39,17 @@ public class UserSecurityDetailsService implements UserDetailsService {
 
         if (applicationUser == null) {
             assert applicationUser != null;
-            throw new UsernameNotFoundException("The user " + applicationUser.getUsername() + " does not exist");
+            throw new UsernameNotFoundException("The user " + username + " does not exist");
         }
         return (UserDetails) applicationUser;
     }
+    public void follow(Integer id, Principal p){
+        Users following = userRepository.findById(id).get();
+        Users follower = userRepository.findByUsername(p.getName());
+        follower.addFollowing(following);
+        userRepository.save(follower);
+    }
+
+
 
 }
